@@ -84,10 +84,10 @@
 			})
 
 			function addStartEnd(path) {
-				var startsymbol = new esri.symbol.PictureMarkerSymbol("../img/start.png", 25, 40);
-				var endsymbol = new esri.symbol.PictureMarkerSymbol("../img/end.png", 25, 40);
-				startsymbol.setOffset(12, 20);
-				endsymbol.setOffset(12, 20);
+				var startsymbol = new esri.symbol.PictureMarkerSymbol("../img/start.png", 37, 60);
+				var endsymbol = new esri.symbol.PictureMarkerSymbol("../img/end.png", 37, 60);
+				startsymbol.setOffset(18, 30);
+				endsymbol.setOffset(18, 30);
 				var startpoint = new esri.geometry.Point(path[0]);
 				var sgraphic = new esri.Graphic(startpoint, startsymbol);
 				var endpoint = new esri.geometry.Point(path[path[0].length - 1]);
