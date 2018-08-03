@@ -8,6 +8,7 @@
 		<link rel="stylesheet" href="http://120.27.197.238:6081/arcgis_js_api/library/3.14/3.14/esri/css/esri.css" />
 		<link rel="stylesheet" href="http://120.27.197.238:6081/arcgis_js_api/library/3.14/3.14/dijit/themes/tundra/tundra.css" />
 		<link rel="stylesheet" href="http://120.27.197.238:6081/arcgis_js_api/library/3.14/3.14/dijit/themes/claro/claro.css" />
+		<script type="text/javascript" src="../util/turf.min.js" ></script>
 		<script src="http://120.27.197.238:6081/arcgis_js_api/library/3.14/3.14/init.js"></script>
 		<script src="../util/tdtlayers.js"></script>
 		<script type="text/javascript" src="../util/Douglas-Peuker.js"></script>
@@ -44,12 +45,12 @@
 				//原始
 				var originpathsymbol = new esri.symbol.SimpleLineSymbol(
 					esri.symbol.SimpleLineSymbol.STYLE_SOLID,
-					new esri.Color([193, 35, 43]), 3);
+					new esri.Color([193, 35, 43]), 10);
 				var originpathgeometry = new esri.geometry.Polyline(path);
 				var origingraphic = new esri.Graphic(originpathgeometry, originpathsymbol);
 				//pathlayer.add(origingraphic);
 
-				//滤波
+				//去噪
 				var vacuatedpath = thirdlinearSmooth5(secondlinearSmooth5(firstlinearSmooth5(deepClone(path))));
 				var vacuatedsymbol = new esri.symbol.SimpleLineSymbol(
 					esri.symbol.SimpleLineSymbol.STYLE_SOLID,
@@ -75,14 +76,30 @@
 				var filtergeometry = new esri.geometry.Polyline(filterdpath);
 				var filtergraphic = new esri.Graphic(filtergeometry, filtersymbol);
 				pathlayer.add(filtergraphic);
-
-				addArrow(filterdpath);
+				
+				
+				linechunks(filterdpath);
+				
+				addArrow(linechunks(filterdpath,150));
 
 				addStartEnd(filterdpath);
 				
 				loopPaths(filterdpath);
 			})
 
+
+			function linechunks(path,segment){
+				var line = turf.lineString(path);
+				var chunks = turf.lineChunk(line, segment, {units: 'meters'});
+				var points=[];
+				var features=chunks.features;
+				for(var i=0;i<features.length;i++){
+					points.push(features[i].geometry.coordinates[features[i].geometry.coordinates.length-2]);
+					points.push(features[i].geometry.coordinates[features[i].geometry.coordinates.length-1]);
+				}
+				return points;
+			}
+			
 			function addStartEnd(path) {
 				var startsymbol = new esri.symbol.PictureMarkerSymbol("../img/start.png", 37, 60);
 				var endsymbol = new esri.symbol.PictureMarkerSymbol("../img/end.png", 37, 60);
@@ -90,7 +107,7 @@
 				endsymbol.setOffset(18, 30);
 				var startpoint = new esri.geometry.Point(path[0]);
 				var sgraphic = new esri.Graphic(startpoint, startsymbol);
-				var endpoint = new esri.geometry.Point(path[path[0].length - 1]);
+				var endpoint = new esri.geometry.Point(path[path.length - 1]);
 				var egraphic = new esri.Graphic(endpoint, endsymbol);
 				pointlayer.add(sgraphic);
 				pointlayer.add(egraphic);
@@ -98,7 +115,7 @@
 
 			function addArrow(path) {
 				var graphics = [];
-				for(var i = 1; i < path.length; i++) {
+				for(var i = 1; i < path.length; i=i+2) {
 					var angle = getangle(path[i - 1], path[i]);
 					var arrowsymbol = new esri.symbol.PictureMarkerSymbol("../img/arrow.png", 12, 12);
 					arrowsymbol.setAngle(angle);
@@ -110,11 +127,9 @@
 				for(var i = 0; i < graphicset.length; i++) {
 					pointlayer.add(graphicset[i]);
 				}
-
 			}
 
 			var pathindex = 0;
-
 			function loopPaths(path) {
 				personlayer.clear();
 				if(pathindex < path.length - 1) {
@@ -176,7 +191,6 @@
 			}
 
 			function getangle(p1, p2) {
-
 				//两点的x、y值
 				var x = p2[0] - p1[0];
 				var y = p2[1] - p1[1];

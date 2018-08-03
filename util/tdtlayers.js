@@ -102,6 +102,7 @@ function defineClassesBeforInitMap() {
 
 		getTileUrl: function(level, row, col) {
 			return "http://t" + col % 8 + ".tianditu.cn/vec_c/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=vec&STYLE=default&TILEMATRIXSET=c&TILEMATRIX=" + level + "&TILEROW=" + row + "&TILECOL=" + col + "&FORMAT=tiles";
+			//return "http://localhost:12303/TDTRoadLayer/_alllayers/L" + dojo.string.pad(level, 2, '0') + "/" + "R" + dojo.string.pad(row.toString(16), 8, '0') + "/" + "C" + dojo.string.pad(col.toString(16), 8, '0') + ".png";
 		}
 	});
 
